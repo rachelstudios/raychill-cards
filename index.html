@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Raychill Pick a Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
 <style>
   body {
     font-family: 'Roboto Mono', monospace;
@@ -12,28 +13,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding: 20px;
     margin: 0;
+    padding: 20px 10px;
   }
-
   h2 {
     font-size: 18px;
-    margin-bottom: 20px;
-    text-align: center;
+    margin-bottom: 15px;
   }
-
   .cards-container {
     display: flex;
     justify-content: center;
-    gap: 10px; /* smaller spacing around cards */
+    gap: 10px; /* reduced spacing */
     flex-wrap: wrap;
-    overflow: visible; /* allow selected card to expand */
-    margin-top: 20px;
+    max-width: 100%;
   }
-
   .card {
-    width: 120px;
-    height: 160px;
+    width: 130px;
+    height: 180px;
     background-color: #ffe6eb; /* light pink card background */
     border-radius: 10px;
     display: flex;
@@ -41,28 +37,23 @@
     justify-content: center;
     cursor: pointer;
     perspective: 1000px;
-    transition: transform 0.3s, opacity 0.3s;
-    transform-origin: center bottom; /* scaling grows upwards evenly */
+    transition: transform 0.3s ease, opacity 0.3s ease;
   }
-
   .card.selected {
     transform: scale(1.5);
     z-index: 10;
   }
-
   .card-inner {
     position: relative;
     width: 100%;
     height: 100%;
     text-align: center;
-    transition: transform 0.6s;
+    transition: transform 0.6s ease;
     transform-style: preserve-3d;
   }
-
   .card.flipped .card-inner {
     transform: rotateY(180deg);
   }
-
   .card-front, .card-back {
     position: absolute;
     width: 100%;
@@ -72,81 +63,78 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
     box-sizing: border-box;
+    overflow: hidden;
   }
-
+  .card-front {
+    background-color: #ffe6eb;
+  }
   .card-front img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
     border-radius: 10px;
+    object-fit: cover;
+    animation: fadeIn 0.5s ease;
   }
-
   .card-back {
+    background-color: #ffe6eb;
     transform: rotateY(180deg);
+    font-size: 10pt;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-
-  .card-back img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
-  }
-
   .pick-text {
-    font-size: 16px;
+    font-size: 18px;
     margin-bottom: 10px;
-    transition: opacity 0.5s;
-  }
-
-  @media (max-width: 480px) {
-    .card {
-      width: 90px;
-      height: 120px;
-    }
-    .card.selected {
-      transform: scale(1.3);
-    }
-  }
-
-  .fade-in {
-    animation: fadeIn 0.5s ease-in;
+    transition: opacity 0.3s ease;
   }
 
   @keyframes fadeIn {
     from {opacity: 0;}
     to {opacity: 1;}
   }
+
+  @media (max-width: 480px) {
+    .card {
+      width: 100px;
+      height: 140px;
+    }
+    .card.selected {
+      transform: scale(1.3);
+    }
+    .pick-text {
+      font-size: 16px;
+    }
+  }
 </style>
 </head>
 <body>
-
 <h2 class="pick-text">Pick a card:</h2>
-
 <div class="cards-container">
-  <div class="card fade-in">
+  <div class="card">
     <div class="card-inner">
       <div class="card-front"><img src="https://i.imgur.com/ohMnVZa.png" alt="Card Back"></div>
-      <div class="card-back"><img src="" alt="Affirmation"></div>
+      <div class="card-back"><img src="" alt="Affirmation" id="affirmation1"></div>
     </div>
   </div>
-  <div class="card fade-in">
+  <div class="card">
     <div class="card-inner">
       <div class="card-front"><img src="https://i.imgur.com/ohMnVZa.png" alt="Card Back"></div>
-      <div class="card-back"><img src="" alt="Affirmation"></div>
+      <div class="card-back"><img src="" alt="Affirmation" id="affirmation2"></div>
     </div>
   </div>
-  <div class="card fade-in">
+  <div class="card">
     <div class="card-inner">
       <div class="card-front"><img src="https://i.imgur.com/ohMnVZa.png" alt="Card Back"></div>
-      <div class="card-back"><img src="" alt="Affirmation"></div>
+      <div class="card-back"><img src="" alt="Affirmation" id="affirmation3"></div>
     </div>
   </div>
 </div>
 
 <script>
-const affirmationImages = [
+const affirmationURLs = [
   "https://i.imgur.com/nkTeerG.png",
   "https://i.imgur.com/EjHXDbL.png",
   "https://i.imgur.com/nc4STAC.png",
@@ -157,8 +145,8 @@ const affirmationImages = [
 const cards = document.querySelectorAll('.card');
 const pickText = document.querySelector('.pick-text');
 
-function getRandomAffirmation() {
-  return affirmationImages[Math.floor(Math.random() * affirmationImages.length)];
+function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
 }
 
 cards.forEach(card => {
@@ -170,26 +158,26 @@ cards.forEach(card => {
       cards.forEach(c => {
         c.classList.remove('flipped', 'selected');
         c.style.opacity = 1;
-        c.querySelector('.card-back img').src = "";
+        c.querySelector('.card-back img').src = '';
       });
       pickText.style.opacity = 1;
     } else {
-      // Assign a random affirmation to clicked card
-      const affirmationURL = getRandomAffirmation();
-      card.querySelector('.card-back img').src = affirmationURL;
+      // Shuffle affirmations and assign to cards
+      const shuffled = shuffleArray([...affirmationURLs]);
+      cards.forEach((c, index) => {
+        c.querySelector('.card-back img').src = shuffled[index];
+      });
 
       // Hide other cards
       cards.forEach(c => {
         if(c !== card) c.style.opacity = 0;
       });
 
-      // Enlarge selected card
       card.classList.add('selected', 'flipped');
       pickText.style.opacity = 0;
     }
   });
 });
 </script>
-
 </body>
 </html>
